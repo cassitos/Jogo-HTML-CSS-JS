@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo Simples</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      grid-template-rows: repeat(5, 50px);
+      gap: 2px;
+      justify-content: center;
+      margin: 20px auto;
+      max-width: fit-content;
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: grey;
+      border: 1px solid gainsboro;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .mine {
+      background-color: red;
+      color: white;
+    }
+
+    .revealed {
+      background-color: green;
+    }
+
+    #restart {
+      display: none;
+      margin: 10px;
+      padding: 8px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #restart:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Caça ao tesouro minado!</h1>
+  <div id="board"></div>
+  <button id="restart">🔄 Reiniciar</button>
+
+  <script>
+    const boardSize = 5;
+    const totalMines = 5;
+    let mines = [];
+    let revealedCount = 0;
+
+    const boardDiv = document.getElementById("board");
+    const restartButton = document.getElementById("restart");
+
+    // Geração de minas
+    function generateMines() {
+      mines = [];
+      while (mines.length < totalMines) {
+        const row = Math.floor(Math.random() * boardSize);
+        const col = Math.floor(Math.random() * boardSize);
+        const minePosition = `${row}-${col}`;
+
+        if (!mines.includes(minePosition)) {
+          mines.push(minePosition);
+        }
+      }
+    }
+
+    // Criar o tabuleiro
+    function createBoard() {
+      boardDiv.innerHTML = "";
+      for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize; col++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+
+          cell.addEventListener("click", handleClick);
+          boardDiv.appendChild(cell);
+        }
+      }
+    }
+
+    // Lógica de clique
+    function handleClick(e) {
+      const row = e.target.dataset.row;
+      const col = e.target.dataset.col;
+      const cell = e.target;
+      const position = `${row}-${col}`;
+
+      if (cell.classList.contains("revealed")) return;
+
+      if (mines.includes(position)) {
+        // Se for mina, finaliza o jogo
+        cell.classList.add("mine");
+        cell.innerText = "💣";
+        alert("Você perdeu! Clique na mina.");
+        revealAllMines();
+        restartButton.style.display = "inline-block"; // Exibe o botão
+      } else {
+        // Revelar lugar seguro
+        cell.classList.add("revealed");
+        revealedCount++;
+
+        if (revealedCount === (boardSize * boardSize - totalMines)) {
+          alert("🎉 Você venceu! 🎉");
+        }
+      }
+    }
+
+    // Revelar todas as minas ao perder
+    function revealAllMines() {
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach((cell) => {
+        const position = `${cell.dataset.row}-${cell.dataset.col}`;
+        if (mines.includes(position)) {
+          cell.classList.add("mine");
+          cell.innerText = "💣";
+        }
+      });
+    }
+
+    // Reiniciar o jogo
+    function resetGame() {
+      generateMines();
+      createBoard();
+      revealedCount = 0;
+      restartButton.style.display = "none";
+    }
+
+    // Configurar botão de reinício
+    restartButton.addEventListener("click", resetGame);
+
+    // Inicializa o jogo
+    function initGame() {
+      generateMines();
+      createBoard();
+      restartButton.style.display = "none";
+    }
+
+    initGame();
+  </script>
+</body>
+</html>
